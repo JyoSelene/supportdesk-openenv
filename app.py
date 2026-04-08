@@ -26,7 +26,7 @@ from collections import OrderedDict
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Body, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
@@ -139,16 +139,15 @@ async def list_tasks():
 
 
 @app.post("/reset", response_model=Dict[str, Any], tags=["environment"])
-async def reset(request: Optional[ResetRequest] = None):
+async def reset(request: Optional[ResetRequest] = Body(default=None)):
     """
     Start a new episode.
 
     Returns the session_id and the first observation.
     Pass session_id to all subsequent /step and /state calls.
+    Accepts empty body — defaults to task_name='email_classify'.
     """
-    if request is None:
-        request = ResetRequest()
-    task_name = request.task_name
+    task_name = request.task_name if request else "email_classify"
     if task_name not in TASK_CONFIG:
         raise HTTPException(
             status_code=400,
