@@ -139,13 +139,15 @@ async def list_tasks():
 
 
 @app.post("/reset", response_model=Dict[str, Any], tags=["environment"])
-async def reset(request: ResetRequest):
+async def reset(request: Optional[ResetRequest] = None):
     """
     Start a new episode.
 
     Returns the session_id and the first observation.
     Pass session_id to all subsequent /step and /state calls.
     """
+    if request is None:
+        request = ResetRequest()
     task_name = request.task_name
     if task_name not in TASK_CONFIG:
         raise HTTPException(
