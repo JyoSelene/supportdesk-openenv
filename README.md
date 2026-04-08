@@ -1,3 +1,13 @@
+---
+title: SupportDesk-OpenEnv
+emoji: 📧
+colorFrom: blue
+colorTo: green
+sdk: docker
+app_file: app.py
+pinned: false
+---
+
 # SupportDesk-OpenEnv
 
 **A real-world customer email triage environment for AI agent training and evaluation.**
