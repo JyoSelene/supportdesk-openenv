@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=65.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "supportdesk-openenv"
+version = "1.0.0"
+description = "Customer email triage environment for training AI agents on real-world support tasks"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [{name = "Jyothsna", email = "jyothsnav350@gmail.com"}]
+requires-python = ">=3.11"
+keywords = ["openenv", "nlp", "customer-support", "email-triage", "ai-training", "benchmark"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Web Environment",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    "fastapi>=0.111.0",
+    "uvicorn[standard]>=0.29.0",
+    "pydantic>=2.7.0",
+    "openai>=1.30.0",
+    "requests>=2.31.0",
+    "python-multipart>=0.0.9",
+    "pyyaml>=6.0.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-asyncio>=0.21",
+]
+
+[project.urls]
+Homepage = "https://github.com/JyoSelene/supportdesk-openenv"
+Repository = "https://github.com/JyoSelene/supportdesk-openenv"
+Documentation = "https://github.com/JyoSelene/supportdesk-openenv#readme"
+
+[tool.setuptools]
+packages = ["email_triage_env"]
+
+[tool.setuptools.package-data]
+email_triage_env = ["*.py"]
