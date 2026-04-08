@@ -1,0 +1,169 @@
+name: supportdesk-openenv
+version: "1.0.0"
+description: >
+  Customer email triage and response environment for training and evaluating
+  AI agents on real-world support workflows. Agents must classify, extract
+  information from, and compose responses to realistic customer support emails.
+author: Jyothsna V
+tags:
+  - nlp
+  - customer-support
+  - email
+  - triage
+  - text-classification
+  - information-extraction
+  - response-generation
+
+tasks:
+  - name: email_classify
+    description: >
+      Classify each incoming customer email by priority (urgent/high/normal/low)
+      and category (billing/technical/account/general/complaint).
+      10 emails per episode. Grader awards partial credit for near-correct priority.
+    difficulty: easy
+    max_steps: 10
+    reward_range: [0.0, 1.0]
+    action_type: classify
+
+  - name: email_extract
+    description: >
+      Extract five structured fields from each support email: customer_id,
+      issue_type, urgency_signals (list), affected_product, and requested_action.
+      6 emails per episode. Per-field scoring with weighted average.
+    difficulty: medium
+    max_steps: 6
+    reward_range: [0.0, 1.0]
+    action_type: extract
+
+  - name: email_respond
+    description: >
+      Compose an accurate, professional response to each support email using
+      the provided knowledge base articles. Scored on required term coverage,
+      factual accuracy, professional format, and absence of forbidden phrases.
+      4 emails per episode.
+    difficulty: hard
+    max_steps: 4
+    reward_range: [0.0, 1.0]
+    action_type: respond
+
+observation_space:
+  type: object
+  description: Current email presented to the agent plus task context
+  properties:
+    email_id:
+      type: string
+      description: Unique email identifier
+    subject:
+      type: string
+      description: Email subject line
+    body:
+      type: string
+      description: Full email body text
+    sender:
+      type: string
+      description: Sender display name
+    sender_email:
+      type: string
+      description: Sender email address
+    timestamp:
+      type: string
+      format: date-time
+      description: ISO-8601 timestamp
+    thread_length:
+      type: integer
+      description: Number of messages in the thread
+    attachments:
+      type: array
+      items:
+        type: string
+      description: List of attachment filenames
+    task_name:
+      type: string
+      enum: [email_classify, email_extract, email_respond]
+    task_instruction:
+      type: string
+      description: Full prompt with instructions formatted for the current email
+    current_step:
+      type: integer
+      description: Current step index (1-based)
+    max_steps:
+      type: integer
+      description: Total emails in this episode
+    episode_id:
+      type: string
+    knowledge_base:
+      type: object
+      description: KB articles (only present for email_respond task)
+      nullable: true
+
+action_space:
+  type: object
+  description: >
+    Action submitted by the agent. The relevant fields depend on the active task.
+  properties:
+    action_type:
+      type: string
+      enum: [classify, extract, respond]
+      description: Must match the active task
+    priority:
+      type: string
+      enum: [urgent, high, normal, low]
+      description: Used for classify action
+      nullable: true
+    category:
+      type: string
+      enum: [billing, technical, account, general, complaint]
+      description: Used for classify action
+      nullable: true
+    extracted_info:
+      type: object
+      description: Structured extraction result; used for extract action
+      nullable: true
+      properties:
+        customer_id:
+          type: string
+        issue_type:
+          type: string
+        urgency_signals:
+          type: array
+          items:
+            type: string
+        affected_product:
+          type: string
+        requested_action:
+          type: string
+    response_text:
+      type: string
+      description: Full email response text; used for respond action
+      nullable: true
+
+reward:
+  type: float
+  range: [0.0, 1.0]
+  description: >
+    Per-step reward from the task grader. All graders are deterministic.
+    email_classify: 0.6 * priority_score + 0.4 * category_score
+      (priority_score has partial credit for near-misses)
+    email_extract: weighted average of 5 field scores (customer_id=0.20,
+      issue_type=0.25, urgency_signals=0.25, affected_product=0.15,
+      requested_action=0.15) using token-overlap matching
+    email_respond: 0.40 * required_terms + 0.15 * no_forbidden_phrases
+      + 0.20 * professional_format + 0.25 * factual_accuracy
+
+episode:
+  termination: >
+    Episode ends when all emails in the pool have been processed (done=True).
+  score: mean of per-step rewards across the episode
+
+api_endpoints:
+  reset: POST /reset
+  step:  POST /step
+  state: GET  /state
+  tasks: GET  /tasks
+  health: GET /health
+
+baseline_scores:
+  email_classify: ~0.72
+  email_extract: ~0.55
+  email_respond: ~0.48
+  model: Qwen/Qwen2.5-72B-Instruct
