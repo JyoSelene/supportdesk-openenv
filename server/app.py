@@ -217,18 +217,22 @@ async def state(session_id: str):
 @app.get("/openenv.yaml", tags=["meta"])
 async def serve_openenv_yaml():
     """Serve the openenv.yaml spec file."""
-    yaml_path = Path(__file__).parent / "openenv.yaml"
+    yaml_path = Path(__file__).parent.parent / "openenv.yaml"
     if yaml_path.exists():
         return FileResponse(str(yaml_path), media_type="text/yaml")
     raise HTTPException(status_code=404, detail="openenv.yaml not found")
 
 
 # ---------------------------------------------------------------------------
-# Entry point (for local dev)
+# Main entry point (OpenEnv compliant)
 # ---------------------------------------------------------------------------
 
-if __name__ == "__main__":
+def main():
+    """Main entry point for the application."""
     import uvicorn
-
     port = int(os.getenv("PORT", "7860"))
-    uvicorn.run("app:app", host="0.0.0.0", port=port, reload=False)
+    uvicorn.run(app, host="0.0.0.0", port=port)
+
+
+if __name__ == "__main__":
+    main()
