@@ -12,7 +12,7 @@ pinned: false
 
 **A real-world customer email triage environment for AI agent training and evaluation.**
 
-SupportDesk-OpenEnv puts an agent in the role of a customer support specialist processing an inbox of realistic emails. The agent must classify tickets by urgency and type, extract structured information for CRM entry, and compose accurate responses using a knowledge base — the exact skills a human support agent develops over months on the job.
+
 
 ---
 
